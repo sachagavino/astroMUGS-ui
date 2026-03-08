@@ -10,6 +10,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 .vscode/
+.idea/
 
 # Packages #
 ############
@@ -23,6 +24,7 @@ __pycache__/
 *.rar
 *.tar
 *.zip
+
 
 
 
@@ -40,6 +42,9 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+.venv/
+venv/
+
 
 chemdisk-token.txt
 
@@ -58,3 +63,8 @@ chemdisk-token.txt
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
