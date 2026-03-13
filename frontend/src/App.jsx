@@ -8,35 +8,61 @@ import {
   Controls,
   MiniMap
 } from '@xyflow/react'
-import '@xyflow/react/dist/style.css'
+import '@xyflow/react/dist/base.css'
+import './index.css'
 
-// Example nodes representing astroMUGS pipeline steps
+import PipelineNode from './components/nodes/PipelineNode'
+import TabBar from './components/tabs/TabBar'
+import PhysicalModelTab from './components/tabs/PhysicalModelTab'
+import ThermalParametersTab from './components/tabs/ThermalParametersTab'
+
+const nodeTypes = {
+  pipeline: PipelineNode,
+}
+
 const initialNodes = [
   {
     id: 'load-data',
-    type: 'input',
-    position: { x: 100, y: 100 },
-    data: { label: 'Load Simulation Data' }
+    type: 'pipeline',
+    position: { x: 100, y: 50 },
+    data: {
+      label: 'disk model',
+      description: 'Load physical disk model to pipeline',
+      icon: '',
+      category: 'input'
+    }
   },
   {
     id: 'process',
-    position: { x: 100, y: 200 },
-    data: { label: 'Process Data' }
+    type: 'pipeline',
+    position: { x: 100, y: 180 },
+    data: {
+      label: 'Envelope model',
+      description: 'Load physical envelope model to pipeline',
+      icon: '',
+      category: 'process'
+    }
   },
   {
     id: 'visualize',
-    type: 'output',
-    position: { x: 100, y: 300 },
-    data: { label: 'Visualize Results' }
+    type: 'pipeline',
+    position: { x: 100, y: 310 },
+    data: {
+      label: 'Pipeline',
+      description: 'run pipeline',
+      icon: '',
+      category: 'output'
+    }
   }
 ]
 
 const initialEdges = [
-  { id: 'e1', source: 'load-data', target: 'process' },
+  { id: 'e1', source: 'load-data', target: 'process', animated: true },
   { id: 'e2', source: 'process', target: 'visualize' }
 ]
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState('pipeline')
   const [nodes, setNodes] = useState(initialNodes)
   const [edges, setEdges] = useState(initialEdges)
 
@@ -56,19 +82,42 @@ export default function App() {
   )
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        fitView
-      >
-        <Background />
-        <Controls />
-        <MiniMap />
-      </ReactFlow>
+    <div style={{ width: '100vw', height: '100vh', background: '#1a1a2e', display: 'flex', flexDirection: 'column' }}>
+      <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+
+      <div style={{ flex: 1, position: 'relative' }}>
+        {activeTab === 'physical-model' && <PhysicalModelTab />}
+        {activeTab === 'thermal-parameters' && <ThermalParametersTab />}
+        {activeTab === 'pipeline' && (
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            nodeTypes={nodeTypes}
+            fitView
+            defaultEdgeOptions={{
+              style: { stroke: '#6366f1', strokeWidth: 2 },
+              type: 'smoothstep'
+            }}
+          >
+            <Background color="#334155" gap={20} />
+            <Controls />
+            <MiniMap
+              nodeColor={(node) => {
+                switch (node.data?.category) {
+                  case 'input': return '#fff'
+                  case 'process': return '#fff'
+                  case 'output': return '#fff'
+                  default: return '#64748b'
+                }
+              }}
+              maskColor="rgba(0, 0, 0, 0.8)"
+            />
+          </ReactFlow>
+        )}
+      </div>
     </div>
   )
 }
