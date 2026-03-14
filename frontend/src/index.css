@@ -36,3 +36,8 @@ body {
   border: 1px solid #334155;
   border-radius: 8px;
 }
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}

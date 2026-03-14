@@ -31,11 +31,7 @@ export const diskFields = [
   { name: 'alpha',          type: 'float', default: 0.01,      desc: 'Viscosity coefficient' },
   { name: 'lim_h',          type: 'float', default: 1.0,       desc: 'Fraction of scale height until which accretion heating is computed' },
   { name: 'star_mass',      type: 'float', default: 0.58,      desc: '[Msun] Mass of the central star' },
-  { name: 'nr',             type: 'int',   default: 101,       desc: 'Number of disk radii edges' },
-  { name: 'ntheta',         type: 'int',   default: 181,       desc: 'Number of edge theta angles' },
-  { name: 'nphi',           type: 'int',   default: 2,         desc: 'Number of phi angles' },
   { name: 'nz_chem',        type: 'int',   default: 50,        desc: 'Number of vertical spatial points for chemistry' },
-  { name: 'coordsystem',    type: 'str',   default: 'spherical', desc: 'Coordinate system for radiative transfer', options: ['spherical', 'cylindrical'] },
 ]
 
 export const envelopeFields = [
@@ -128,4 +124,11 @@ export const waveFields = [
   { name: 'lmin_mono',      type: 'float', default: 0.0912,    desc: '[micron] Minimum monochromatic wavelength' },
   { name: 'lmax_mono',      type: 'float', default: 10000,     desc: '[micron] Maximum monochromatic wavelength' },
   { name: 'na_mono',        type: 'int',   default: 200,       desc: 'Number of monochromatic wavelengths' },
+]
+
+export const gridFields = [
+  { name: 'nr',             type: 'int',   default: 101,       desc: 'Number of disk radii edges' },
+  { name: 'ntheta',         type: 'int',   default: 181,       desc: 'Number of edge theta angles' },
+  { name: 'nphi',           type: 'int',   default: 2,         desc: 'Number of phi angles' },
+  { name: 'coordsystem',    type: 'str',   default: 'spherical', desc: 'Coordinate system for radiative transfer', options: ['spherical', 'cylindrical'] },
 ]
