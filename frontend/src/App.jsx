@@ -66,6 +66,33 @@ export default function App() {
   const [nodes, setNodes] = useState(initialNodes)
   const [edges, setEdges] = useState(initialEdges)
 
+  // Physical model state (disk + envelope)
+  const [physicalParams, setPhysicalParams] = useState({
+    disk: {},
+    envelope: {},
+  })
+
+  // Thermal parameters state (star + wave + control)
+  const [thermalParams, setThermalParams] = useState({
+    star: {},
+    wave: {},
+    control: {},
+  })
+
+  const onPhysicalParamChange = useCallback((group, name, value) => {
+    setPhysicalParams((prev) => ({
+      ...prev,
+      [group]: { ...prev[group], [name]: value },
+    }))
+  }, [])
+
+  const onThermalParamChange = useCallback((group, name, value) => {
+    setThermalParams((prev) => ({
+      ...prev,
+      [group]: { ...prev[group], [name]: value },
+    }))
+  }, [])
+
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
     []
@@ -85,9 +112,19 @@ export default function App() {
     <div style={{ width: '100vw', height: '100vh', background: '#1a1a2e', display: 'flex', flexDirection: 'column' }}>
       <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <div style={{ flex: 1, position: 'relative' }}>
-        {activeTab === 'physical-model' && <PhysicalModelTab />}
-        {activeTab === 'thermal-parameters' && <ThermalParametersTab />}
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+        {activeTab === 'physical-model' && (
+          <PhysicalModelTab
+            params={physicalParams}
+            onParamChange={onPhysicalParamChange}
+          />
+        )}
+        {activeTab === 'thermal-parameters' && (
+          <ThermalParametersTab
+            params={thermalParams}
+            onParamChange={onThermalParamChange}
+          />
+        )}
         {activeTab === 'pipeline' && (
           <ReactFlow
             nodes={nodes}

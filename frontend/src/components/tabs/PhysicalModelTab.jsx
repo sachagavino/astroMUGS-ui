@@ -1,17 +1,27 @@
-export default function PhysicalModelTab() {
+import ParamBlock from '../params/ParamBlock'
+import { diskFields, envelopeFields } from '../params/paramDefs'
+
+export default function PhysicalModelTab({ params, onParamChange }) {
   return (
     <div style={{
       padding: '32px',
-      color: '#e2e8f0',
       height: '100%',
       overflowY: 'auto',
     }}>
-      <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '24px' }}>
-        Physical Model
-      </h2>
-      <p style={{ color: '#94a3b8', fontSize: '14px' }}>
-        Configure the physical model parameters here.
-      </p>
+      <ParamBlock
+        title="Disk Parameters"
+        fields={diskFields}
+        values={params.disk}
+        onChange={(name, value) => onParamChange('disk', name, value)}
+        defaultOpen={true}
+      />
+      <ParamBlock
+        title="Envelope Parameters"
+        fields={envelopeFields}
+        values={params.envelope}
+        onChange={(name, value) => onParamChange('envelope', name, value)}
+        defaultOpen={true}
+      />
     </div>
   )
 }
