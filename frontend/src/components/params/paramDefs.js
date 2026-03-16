@@ -120,10 +120,45 @@ export const controlFields = [
 export const waveFields = [
   { name: 'lmin',           type: 'float', default: 0.0912,    desc: '[micron] Minimum wavelength' },
   { name: 'lmax',           type: 'float', default: 10000,     desc: '[micron] Maximum wavelength' },
-  { name: 'na',             type: 'int',   default: 200,       desc: 'Number of wavelengths' },
+  { name: 'nlam',           type: 'int',   default: 200,       desc: 'Number of wavelengths' },
   { name: 'lmin_mono',      type: 'float', default: 0.0912,    desc: '[micron] Minimum monochromatic wavelength' },
   { name: 'lmax_mono',      type: 'float', default: 10000,     desc: '[micron] Maximum monochromatic wavelength' },
-  { name: 'na_mono',        type: 'int',   default: 200,       desc: 'Number of monochromatic wavelengths' },
+  { name: 'nlam_mono',      type: 'int',   default: 200,       desc: 'Number of monochromatic wavelengths' },
+]
+
+export const wavelengthFields = [
+  { name: 'lmin',           type: 'float', default: 0.0912,    desc: '[micron] Minimum wavelength' },
+  { name: 'lmax',           type: 'float', default: 10000,     desc: '[micron] Maximum wavelength' },
+  { name: 'nlam',           type: 'int',   default: 200,       desc: 'Number of wavelengths' },
+  { name: 'log',            type: 'bool',  default: true,      desc: 'Use logarithmic spacing' },
+]
+
+export const mcmonoFields = [
+  { name: 'lmin_mono',      type: 'float', default: 0.0912,    desc: '[micron] Minimum monochromatic wavelength' },
+  { name: 'lmax_mono',      type: 'float', default: 10000,     desc: '[micron] Maximum monochromatic wavelength' },
+  { name: 'nlam_mono',      type: 'int',   default: 200,       desc: 'Number of monochromatic wavelengths' },
+  { name: 'log_mono',       type: 'bool',  default: true,      desc: 'Use logarithmic spacing' },
+]
+
+// ---------- dust.py ----------
+
+export const customDustFields = [
+  { name: 'rsingle',   type: 'float', default: null,  desc: '[micron] Single grain radius' },
+  { name: 'rho_m',     type: 'float', default: null,  desc: '[g.cm-3] Material density of the grain' },
+  { name: 'units',     type: 'str',   default: 'microns',  desc: 'Units of the grain sizes in the file', options: ['microns', 'mm', 'cm', 'm'] },
+  { name: 'path',      type: 'str',   default: null,  desc: 'Path to the dust size file' },
+  { name: 'filename',  type: 'str',   default: null,  desc: 'Filename for the dust sizes' },
+]
+
+export const mrnDustFields = [
+  { name: 'rsingle',   type: 'float', default: null,  desc: '[micron] Single grain radius' },
+  { name: 'amin',      type: 'float', default: null,  desc: '[micron] Minimum grain radius' },
+  { name: 'amax',      type: 'float', default: null,  desc: '[micron] Maximum grain radius' },
+  { name: 'nb_sizes',  type: 'int',   default: null,  desc: 'Number of grain sizes' },
+  { name: 'd_exp',     type: 'float', default: null,  desc: 'Size distribution exponent' },
+  { name: 'rho_m',     type: 'float', default: null,  desc: '[g.cm-3] Material density of the grain' },
+  { name: 'dtogas',    type: 'float', default: null,  desc: 'Dust to gas mass ratio' },
+  { name: 'cst_norm',  type: 'float', default: null,  desc: 'Normalisation constant' },
 ]
 
 export const gridFields = [

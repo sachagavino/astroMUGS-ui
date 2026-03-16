@@ -41,6 +41,18 @@ export default function PipelineToolbar({ onAdd }) {
       <button style={buttonStyle} onClick={() => onAdd('grid')}>
         <span style={plusStyle}>+</span> Add amr grid
       </button>
+      <button style={buttonStyle} onClick={() => onAdd('wavelength')}>
+        <span style={plusStyle}>+</span> Add wavelength
+      </button>
+      <button style={buttonStyle} onClick={() => onAdd('mcmono')}>
+        <span style={plusStyle}>+</span> Add mcmono wavelength
+      </button>
+      <button style={buttonStyle} onClick={() => onAdd('dust')}>
+        <span style={plusStyle}>+</span> Add dust model
+      </button>
+      <button style={buttonStyle} onClick={() => onAdd('plot')}>
+        <span style={plusStyle}>+</span> Add plot
+      </button>
     </div>
   )
 }

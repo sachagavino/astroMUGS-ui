@@ -1,5 +1,5 @@
 import ParamBlock from '../params/ParamBlock'
-import { diskFields, envelopeFields, gridFields } from '../params/paramDefs'
+import { diskFields, envelopeFields, gridFields, wavelengthFields, mcmonoFields, controlFields, customDustFields, mrnDustFields } from '../params/paramDefs'
 import { starFields } from '../params/paramDefs'
 
 const panelConfig = {
@@ -27,13 +27,37 @@ const panelConfig = {
     group: 'grid',
     paramKey: 'grid',
   },
+  wavelength: {
+    title: 'Wavelength Grid Parameters',
+    fields: wavelengthFields,
+    group: 'wavelength',
+    paramKey: 'wavelength',
+  },
+  mcmono: {
+    title: 'Monochromatic Wavelength Grid Parameters',
+    fields: mcmonoFields,
+    group: 'mcmono',
+    paramKey: 'mcmono',
+  },
+  control: {
+    title: 'Control Parameters (RADMC-3D)',
+    fields: controlFields,
+    group: 'control',
+    paramKey: 'control',
+  },
+  dust: {
+    title: 'Dust Model Parameters',
+    multi: true,
+    sections: [
+      { title: 'Custom dust distribution', fields: customDustFields, group: 'custom_dust' },
+      { title: 'MRN-like distribution', fields: mrnDustFields, group: 'mrn_dust' },
+    ],
+  },
 }
 
 export default function SlidePanel({ kind, params, onChange, onClose }) {
   const config = panelConfig[kind]
   if (!config) return null
-
-  const values = params[config.group] || {}
 
   return (
     <>
@@ -94,13 +118,26 @@ export default function SlidePanel({ kind, params, onChange, onClose }) {
 
         {/* Content */}
         <div style={{ flex: 1, overflowY: 'auto', overflowX: 'auto', padding: '20px' }}>
-          <ParamBlock
-            title={config.title}
-            fields={config.fields}
-            values={values}
-            onChange={(name, value) => onChange(config.group, name, value)}
-            defaultOpen={true}
-          />
+          {config.multi ? (
+            config.sections.map((section) => (
+              <ParamBlock
+                key={section.group}
+                title={section.title}
+                fields={section.fields}
+                values={params[section.group] || {}}
+                onChange={(name, value) => onChange(section.group, name, value)}
+                defaultOpen={true}
+              />
+            ))
+          ) : (
+            <ParamBlock
+              title={config.title}
+              fields={config.fields}
+              values={params[config.group] || {}}
+              onChange={(name, value) => onChange(config.group, name, value)}
+              defaultOpen={true}
+            />
+          )}
         </div>
       </div>
     </>

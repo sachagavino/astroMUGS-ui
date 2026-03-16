@@ -1,6 +1,4 @@
 const tabs = [
-  { id: 'physical-model', label: 'Physical Model' },
-  { id: 'thermal-parameters', label: 'Thermal Parameters' },
   { id: 'pipeline', label: 'Pipeline' },
 ]
 

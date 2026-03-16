@@ -13,15 +13,16 @@ import './index.css'
 
 import EntryNode from './components/nodes/EntryNode'
 import MasterNode from './components/nodes/MasterNode'
+import PlotNode from './components/nodes/PlotNode'
 import TabBar from './components/tabs/TabBar'
 import PipelineToolbar from './components/pipeline/PipelineToolbar'
 import SlidePanel from './components/pipeline/SlidePanel'
-import PhysicalModelTab from './components/tabs/PhysicalModelTab'
-import ThermalParametersTab from './components/tabs/ThermalParametersTab'
+import PlotModal from './components/pipeline/PlotModal'
 
 const nodeTypes = {
   entry: EntryNode,
   master: MasterNode,
+  plot: PlotNode,
 }
 
 const entryLabels = {
@@ -29,6 +30,9 @@ const entryLabels = {
   envelope: 'envelope model',
   star: 'stars',
   grid: 'amr grid',
+  wavelength: 'wavelength',
+  mcmono: 'mcmono wavelength',
+  dust: 'dust model',
 }
 
 const initialNodes = [
@@ -54,6 +58,10 @@ export default function App() {
   // Slide panel state
   const [slidePanel, setSlidePanel] = useState(null)
 
+  // Plot modal state
+  const [plotImage, setPlotImage] = useState(null)
+  const [plotSourceNodeId, setPlotSourceNodeId] = useState(null)
+
   // Physical model state
   const [physicalParams, setPhysicalParams] = useState({
     disk: {},
@@ -67,12 +75,45 @@ export default function App() {
     setGridParams((prev) => ({ ...prev, [name]: value }))
   }, [])
 
-  // Thermal parameters state
+  // Wavelength grid parameters state
+  const [wavelengthParams, setWavelengthParams] = useState({})
+
+  const onWavelengthParamChange = useCallback((_group, name, value) => {
+    setWavelengthParams((prev) => ({ ...prev, [name]: value }))
+  }, [])
+
+  // Mcmono wavelength grid parameters state
+  const [mcmonoParams, setMcmonoParams] = useState({})
+
+  const onMcmonoParamChange = useCallback((_group, name, value) => {
+    setMcmonoParams((prev) => ({ ...prev, [name]: value }))
+  }, [])
+
+  // Thermal parameters state (star + control)
   const [thermalParams, setThermalParams] = useState({
     star: {},
-    wave: {},
     control: {},
   })
+
+  // Control parameters state
+  const [controlParams, setControlParams] = useState({})
+
+  // Dust model parameters state
+  const [dustParams, setDustParams] = useState({
+    custom_dust: {},
+    mrn_dust: {},
+  })
+
+  const onControlParamChange = useCallback((_group, name, value) => {
+    setControlParams((prev) => ({ ...prev, [name]: value }))
+  }, [])
+
+  const onDustParamChange = useCallback((group, name, value) => {
+    setDustParams((prev) => ({
+      ...prev,
+      [group]: { ...prev[group], [name]: value },
+    }))
+  }, [])
 
   // write_continuum checkbox flags
   const [wcFlags, setWcFlags] = useState({
@@ -110,12 +151,70 @@ export default function App() {
     return result
   }
 
+  // Open control settings panel
+  const handleOpenControl = useCallback(() => {
+    setSlidePanel('control')
+  }, [])
+
+  // Resolve the path for a plot node by following its incoming edge
+  const resolvePlotPath = useCallback((plotNodeId) => {
+    // Find the edge going into this plot node
+    const incomingEdge = edges.find((e) => e.target === plotNodeId)
+    if (!incomingEdge) return null
+
+    const sourceNode = nodes.find((n) => n.id === incomingEdge.source)
+    if (!sourceNode) return null
+
+    // If connected to the master "write-continuum" node, use its thermal path
+    if (sourceNode.id === 'write-continuum') {
+      return thermalPath || null
+    }
+
+    return null
+  }, [edges, nodes, thermalPath])
+
+  // Create plot handler — nodeId is the plot node requesting the plot
+  const handleCreatePlot = useCallback(async (plotNodeId, plotType, vmin = 1e-30, vmax = 1e-15) => {
+    const path = resolvePlotPath(plotNodeId)
+    if (!path) {
+      alert('Connect the Plot node to a source node (e.g. Write continuum) first.')
+      return
+    }
+    // Store the plot node id so the modal can re-request with new vmin/vmax
+    setPlotSourceNodeId(plotNodeId)
+    try {
+      const res = await fetch('http://localhost:8000/api/plot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plot_type: plotType,
+          path,
+          vmin,
+          vmax,
+        }),
+      })
+      const data = await res.json()
+      if (data.status === 'ok') {
+        setPlotImage(data.image)
+      } else {
+        alert('Plot error: ' + data.message)
+        console.error(data.traceback)
+      }
+    } catch (err) {
+      alert('Could not reach backend: ' + err.message)
+    }
+  }, [resolvePlotPath])
+
   // Write button handler -- calls FastAPI backend
   const handleWrite = useCallback(async () => {
     if (!thermalPath) {
       alert('Please set the thermal path first.')
       return
     }
+
+    // Find dust type from dust entry nodes
+    const dustNode = nodes.find((n) => n.data.kind === 'dust')
+    const dustType = dustNode?.data.dustType || null
 
     try {
       const res = await fetch('http://localhost:8000/api/write-continuum', {
@@ -128,6 +227,14 @@ export default function App() {
           envelope: coerceParams(physicalParams.envelope),
           star: coerceParams(thermalParams.star),
           grid: coerceParams(gridParams),
+          wavelength: coerceParams(wavelengthParams),
+          mcmono_wave: coerceParams(mcmonoParams),
+          control: coerceParams(controlParams),
+          dust: {
+            dust_type: dustType,
+            custom_dust: coerceParams(dustParams.custom_dust),
+            mrn_dust: coerceParams(dustParams.mrn_dust),
+          },
         }),
       })
       const data = await res.json()
@@ -140,7 +247,7 @@ export default function App() {
     } catch (err) {
       alert('Could not reach backend: ' + err.message)
     }
-  }, [thermalPath, wcFlags, physicalParams, thermalParams, gridParams])
+  }, [thermalPath, wcFlags, physicalParams, thermalParams, gridParams, wavelengthParams, mcmonoParams, controlParams, nodes, dustParams])
 
   // Spawn a new entry node
   const addEntryNode = useCallback((kind) => {
@@ -148,19 +255,37 @@ export default function App() {
     const id = `entry-${kind}-${entryCounter.current}`
     const yOffset = 60 + (entryCounter.current - 1) * 70
 
+    if (kind === 'plot') {
+      setNodes((nds) => [
+        ...nds,
+        {
+          id,
+          type: 'plot',
+          position: { x: 700, y: yOffset },
+          data: { label: 'Plot', kind: 'plot' },
+        },
+      ])
+      return
+    }
+
+    const nodeData = { label: entryLabels[kind] || kind, kind }
+    if (kind === 'dust') {
+      nodeData.dustType = null
+    }
+
     setNodes((nds) => [
       ...nds,
       {
         id,
         type: 'entry',
         position: { x: 80, y: yOffset },
-        data: { label: entryLabels[kind] || kind, kind },
+        data: nodeData,
       },
     ])
   }, [])
 
-  // Handle node click -- open slide panel for entry nodes
-  const onNodeClick = useCallback((_event, node) => {
+  // Handle node double-click -- open slide panel for entry nodes
+  const onNodeDoubleClick = useCallback((_event, node) => {
     if (node.type === 'entry' && node.data.kind) {
       setSlidePanel(node.data.kind)
     }
@@ -178,6 +303,31 @@ export default function App() {
           thermalPath,
           onThermalPathChange: setThermalPath,
           onWrite: handleWrite,
+          onOpenControl: handleOpenControl,
+        },
+      }
+    }
+    if (n.data.kind === 'dust') {
+      return {
+        ...n,
+        data: {
+          ...n.data,
+          onDustTypeChange: (type) => {
+            setNodes((nds) => nds.map((node) =>
+              node.id === n.id
+                ? { ...node, data: { ...node.data, dustType: type } }
+                : node
+            ))
+          },
+        },
+      }
+    }
+    if (n.type === 'plot') {
+      return {
+        ...n,
+        data: {
+          ...n.data,
+          onCreatePlot: handleCreatePlot,
         },
       }
     }
@@ -217,10 +367,18 @@ export default function App() {
   const slidePanelParams =
     slidePanel === 'star' ? thermalParams :
     slidePanel === 'grid' ? { grid: gridParams } :
+    slidePanel === 'wavelength' ? { wavelength: wavelengthParams } :
+    slidePanel === 'mcmono' ? { mcmono: mcmonoParams } :
+    slidePanel === 'control' ? { control: controlParams } :
+    slidePanel === 'dust' ? dustParams :
     physicalParams
   const slidePanelOnChange =
     slidePanel === 'star' ? onThermalParamChange :
     slidePanel === 'grid' ? onGridParamChange :
+    slidePanel === 'wavelength' ? onWavelengthParamChange :
+    slidePanel === 'mcmono' ? onMcmonoParamChange :
+    slidePanel === 'control' ? onControlParamChange :
+    slidePanel === 'dust' ? onDustParamChange :
     onPhysicalParamChange
 
   return (
@@ -228,18 +386,6 @@ export default function App() {
       <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {activeTab === 'physical-model' && (
-          <PhysicalModelTab
-            params={physicalParams}
-            onParamChange={onPhysicalParamChange}
-          />
-        )}
-        {activeTab === 'thermal-parameters' && (
-          <ThermalParametersTab
-            params={thermalParams}
-            onParamChange={onThermalParamChange}
-          />
-        )}
         {activeTab === 'pipeline' && (
           <>
             <PipelineToolbar onAdd={addEntryNode} />
@@ -250,7 +396,7 @@ export default function App() {
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
-                onNodeClick={onNodeClick}
+                onNodeDoubleClick={onNodeDoubleClick}
                 nodeTypes={nodeTypes}
                 fitView
                 defaultEdgeOptions={{
@@ -279,6 +425,19 @@ export default function App() {
           </>
         )}
       </div>
+
+      {/* Plot modal */}
+      {plotImage && (
+        <PlotModal
+          imageSrc={plotImage}
+          onClose={() => { setPlotImage(null); setPlotSourceNodeId(null) }}
+          onRefresh={async (vmin, vmax) => {
+            if (plotSourceNodeId) {
+              await handleCreatePlot(plotSourceNodeId, 'density2D', vmin, vmax)
+            }
+          }}
+        />
+      )}
     </div>
   )
 }
