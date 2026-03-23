@@ -6,9 +6,9 @@ export default function TabBar({ activeTab, onTabChange }) {
   return (
     <div style={{
       display: 'flex',
-      background: '#0f0f23',
+      background: 'transparent',
       borderBottom: '1px solid #334155',
-      padding: '0 16px',
+      padding: '0 16px 0 196px',
     }}>
       {tabs.map((tab) => (
         <button

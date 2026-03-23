@@ -275,7 +275,9 @@ export default function App() {
   const addEntryNode = useCallback((kind) => {
     entryCounter.current += 1
     const id = `entry-${kind}-${entryCounter.current}`
-    const yOffset = 60 + (entryCounter.current - 1) * 70
+    // Place new nodes in the visible center area with slight random offset to avoid stacking
+    const baseX = kind === 'plot' ? 700 : 80
+    const yOffset = 100 + Math.random() * 200
 
     if (kind === 'plot') {
       setNodes((nds) => [
@@ -283,7 +285,7 @@ export default function App() {
         {
           id,
           type: 'plot',
-          position: { x: 700, y: yOffset },
+          position: { x: baseX, y: yOffset },
           data: { label: 'Plot', kind: 'plot' },
         },
       ])
@@ -300,7 +302,7 @@ export default function App() {
       {
         id,
         type: 'entry',
-        position: { x: 80, y: yOffset },
+        position: { x: baseX, y: yOffset },
         data: nodeData,
       },
     ])
@@ -407,19 +409,28 @@ export default function App() {
     <div style={{ width: '100vw', height: '100vh', background: '#1a1a2e', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       {/* Animated background */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-        <DarkVeil speed={0.0} />
-        <DarkVeil hueShift={0.0} />
-        <DarkVeil noiseIntensity={0.0} />
-        <DarkVeil scanlineIntensity={0.2} />
-        <DarkVeil scanlineFrequency={0.2} />
-        <DarkVeil warpAmount={0.2} />
-        <DarkVeil resolutionScale={0.2} />
+        <DarkVeil speed={0.4} 
+                  hueShift={53} 
+                  noiseIntensity={0.1}
+                  resolutionScale={1.}
+                  scanlineFrequency={0.5}
+                  scanlineIntensity={0}
+
+        />
       </div>
 
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* App header with logo */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', flexShrink: 0 }}>
+        <img src="/logo-dark.png" alt="astroMUGS" style={{ height: 52 }} />
+        <span style={{ color: '#e2e8f0', fontSize: 30, fontWeight: 700, letterSpacing: 1 }}>
+          astroMUGS
+        </span>
+      </div>
+
       <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         {activeTab === 'pipeline' && (
           <>
             <PipelineToolbar onAdd={addEntryNode} />

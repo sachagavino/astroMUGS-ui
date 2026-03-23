@@ -1,9 +1,11 @@
-const buttonStyle = {
+import { useState } from 'react'
+
+const baseStyle = {
   display: 'flex',
   alignItems: 'center',
   gap: '6px',
-  padding: '6px 14px',
-  background: '#1e293b',
+  padding: '8px 14px',
+  background: 'rgba(30, 41, 59, 0.7)',
   border: '1px solid #334155',
   borderRadius: '8px',
   color: '#e2e8f0',
@@ -12,6 +14,14 @@ const buttonStyle = {
   cursor: 'pointer',
   fontFamily: 'inherit',
   transition: 'all 0.15s ease',
+  width: '100%',
+  textAlign: 'left',
+}
+
+const hoverStyle = {
+  ...baseStyle,
+  background: 'rgba(99, 102, 241, 0.25)',
+  borderColor: '#6366f1',
 }
 
 const plusStyle = {
@@ -20,39 +30,44 @@ const plusStyle = {
   fontSize: '14px',
 }
 
+function NodeButton({ label, onClick }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      style={hovered ? hoverStyle : baseStyle}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={onClick}
+    >
+      <span style={plusStyle}>+</span> {label}
+    </button>
+  )
+}
+
 export default function PipelineToolbar({ onAdd }) {
   return (
     <div style={{
       display: 'flex',
-      gap: '10px',
-      padding: '10px 16px',
-      background: '#0f0f23',
-      borderBottom: '1px solid #334155',
+      flexDirection: 'column',
+      gap: '8px',
+      padding: '12px',
+      width: 180,
+      flexShrink: 0,
+      overflowY: 'auto',
+      borderRight: '1px solid #334155',
+      background: 'rgba(15, 15, 35, 0.5)',
     }}>
-      <button style={buttonStyle} onClick={() => onAdd('disk')}>
-        <span style={plusStyle}>+</span> Add disk model
-      </button>
-      <button style={buttonStyle} onClick={() => onAdd('envelope')}>
-        <span style={plusStyle}>+</span> Add envelope model
-      </button>
-      <button style={buttonStyle} onClick={() => onAdd('star')}>
-        <span style={plusStyle}>+</span> Add star model
-      </button>
-      <button style={buttonStyle} onClick={() => onAdd('grid')}>
-        <span style={plusStyle}>+</span> Add amr grid
-      </button>
-      <button style={buttonStyle} onClick={() => onAdd('wavelength')}>
-        <span style={plusStyle}>+</span> Add wavelength
-      </button>
-      <button style={buttonStyle} onClick={() => onAdd('mcmono')}>
-        <span style={plusStyle}>+</span> Add mcmono wavelength
-      </button>
-      <button style={buttonStyle} onClick={() => onAdd('dust')}>
-        <span style={plusStyle}>+</span> Add dust model
-      </button>
-      <button style={buttonStyle} onClick={() => onAdd('plot')}>
-        <span style={plusStyle}>+</span> Add plot
-      </button>
+      <div style={{ color: '#64748b', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
+        Nodes
+      </div>
+      <NodeButton label="Disk model" onClick={() => onAdd('disk')} />
+      <NodeButton label="Envelope model" onClick={() => onAdd('envelope')} />
+      <NodeButton label="Star model" onClick={() => onAdd('star')} />
+      <NodeButton label="AMR grid" onClick={() => onAdd('grid')} />
+      <NodeButton label="Wavelength" onClick={() => onAdd('wavelength')} />
+      <NodeButton label="Mcmono wavelength" onClick={() => onAdd('mcmono')} />
+      <NodeButton label="Dust model" onClick={() => onAdd('dust')} />
+      <NodeButton label="Plot" onClick={() => onAdd('plot')} />
     </div>
   )
 }
