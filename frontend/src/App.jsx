@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import {
   ReactFlow,
   addEdge,
@@ -18,6 +18,7 @@ import TabBar from './components/tabs/TabBar'
 import PipelineToolbar from './components/pipeline/PipelineToolbar'
 import SlidePanel from './components/pipeline/SlidePanel'
 import PlotModal from './components/pipeline/PlotModal'
+import DarkVeil from './components/backgrounds/DarkVeil'
 
 const nodeTypes = {
   entry: EntryNode,
@@ -35,7 +36,9 @@ const entryLabels = {
   dust: 'dust model',
 }
 
-const initialNodes = [
+const STORAGE_KEY = 'astromugs-ui-state'
+
+const defaultNodes = [
   {
     id: 'write-continuum',
     type: 'master',
@@ -49,11 +52,21 @@ const initialNodes = [
   },
 ]
 
+function loadSaved() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch { /* ignore corrupt data */ }
+  return null
+}
+
+const saved = loadSaved()
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('pipeline')
-  const [nodes, setNodes] = useState(initialNodes)
-  const [edges, setEdges] = useState([])
-  const entryCounter = useRef(0)
+  const [nodes, setNodes] = useState(saved?.nodes || defaultNodes)
+  const [edges, setEdges] = useState(saved?.edges || [])
+  const entryCounter = useRef(saved?.entryCounter || 0)
 
   // Slide panel state
   const [slidePanel, setSlidePanel] = useState(null)
@@ -63,46 +76,43 @@ export default function App() {
   const [plotSourceNodeId, setPlotSourceNodeId] = useState(null)
 
   // Physical model state
-  const [physicalParams, setPhysicalParams] = useState({
-    disk: {},
-    envelope: {},
-  })
+  const [physicalParams, setPhysicalParams] = useState(
+    saved?.physicalParams || { disk: {}, envelope: {} }
+  )
 
   // Grid parameters state
-  const [gridParams, setGridParams] = useState({})
+  const [gridParams, setGridParams] = useState(saved?.gridParams || {})
 
   const onGridParamChange = useCallback((_group, name, value) => {
     setGridParams((prev) => ({ ...prev, [name]: value }))
   }, [])
 
   // Wavelength grid parameters state
-  const [wavelengthParams, setWavelengthParams] = useState({})
+  const [wavelengthParams, setWavelengthParams] = useState(saved?.wavelengthParams || {})
 
   const onWavelengthParamChange = useCallback((_group, name, value) => {
     setWavelengthParams((prev) => ({ ...prev, [name]: value }))
   }, [])
 
   // Mcmono wavelength grid parameters state
-  const [mcmonoParams, setMcmonoParams] = useState({})
+  const [mcmonoParams, setMcmonoParams] = useState(saved?.mcmonoParams || {})
 
   const onMcmonoParamChange = useCallback((_group, name, value) => {
     setMcmonoParams((prev) => ({ ...prev, [name]: value }))
   }, [])
 
   // Thermal parameters state (star + control)
-  const [thermalParams, setThermalParams] = useState({
-    star: {},
-    control: {},
-  })
+  const [thermalParams, setThermalParams] = useState(
+    saved?.thermalParams || { star: {}, control: {} }
+  )
 
   // Control parameters state
-  const [controlParams, setControlParams] = useState({})
+  const [controlParams, setControlParams] = useState(saved?.controlParams || {})
 
   // Dust model parameters state
-  const [dustParams, setDustParams] = useState({
-    custom_dust: {},
-    mrn_dust: {},
-  })
+  const [dustParams, setDustParams] = useState(
+    saved?.dustParams || { custom_dust: {}, mrn_dust: {} }
+  )
 
   const onControlParamChange = useCallback((_group, name, value) => {
     setControlParams((prev) => ({ ...prev, [name]: value }))
@@ -116,7 +126,7 @@ export default function App() {
   }, [])
 
   // write_continuum checkbox flags
-  const [wcFlags, setWcFlags] = useState({
+  const [wcFlags, setWcFlags] = useState(saved?.wcFlags || {
     dens: false,
     grid: false,
     opac: false,
@@ -132,7 +142,19 @@ export default function App() {
   }, [])
 
   // Thermal path for write_continuum
-  const [thermalPath, setThermalPath] = useState('')
+  const [thermalPath, setThermalPath] = useState(saved?.thermalPath || '')
+
+  // Persist state to localStorage on every change
+  useEffect(() => {
+    const state = {
+      nodes, edges,
+      entryCounter: entryCounter.current,
+      physicalParams, gridParams, wavelengthParams, mcmonoParams,
+      thermalParams, controlParams, dustParams,
+      wcFlags, thermalPath,
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  }, [nodes, edges, physicalParams, gridParams, wavelengthParams, mcmonoParams, thermalParams, controlParams, dustParams, wcFlags, thermalPath])
 
   // Convert string values from inputs to proper numeric types
   const coerceParams = (obj) => {
@@ -382,7 +404,19 @@ export default function App() {
     onPhysicalParamChange
 
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#1a1a2e', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: '100vw', height: '100vh', background: '#1a1a2e', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      {/* Animated background */}
+      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+        <DarkVeil speed={0.0} />
+        <DarkVeil hueShift={0.0} />
+        <DarkVeil noiseIntensity={0.0} />
+        <DarkVeil scanlineIntensity={0.2} />
+        <DarkVeil scanlineFrequency={0.2} />
+        <DarkVeil warpAmount={0.2} />
+        <DarkVeil resolutionScale={0.2} />
+      </div>
+
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
       <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -404,7 +438,7 @@ export default function App() {
                   type: 'smoothstep',
                 }}
               >
-                <Background color="#334155" gap={20} />
+                <Background color="rgba(51,65,85,0.3)" gap={20} />
                 <Controls />
                 <MiniMap
                   nodeColor={() => '#6366f1'}
@@ -438,6 +472,7 @@ export default function App() {
           }}
         />
       )}
+      </div>
     </div>
   )
 }
