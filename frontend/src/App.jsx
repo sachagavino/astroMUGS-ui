@@ -409,8 +409,8 @@ export default function App() {
     <div style={{ width: '100vw', height: '100vh', background: '#1a1a2e', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       {/* Animated background */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-        <DarkVeil speed={0.4} 
-                  hueShift={53} 
+        <DarkVeil speed={0.3} 
+                  hueShift={50} 
                   noiseIntensity={0.1}
                   resolutionScale={1.}
                   scanlineFrequency={0.5}
