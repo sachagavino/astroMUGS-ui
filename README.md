@@ -7,7 +7,8 @@
 A visual node-based interface for building [astroMUGS](https://github.com/sachagavino/astroMUGS) pipelines.
 
 
-<video src="docs/demo.gif" width="100%" autoplay loop muted playsinline></video>
+![astroMUGS-UI Demo](docs/demo.gif)
+
 
 
 ## Overview
