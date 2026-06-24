@@ -30,6 +30,18 @@ const plusStyle = {
   fontSize: '14px',
 }
 
+function SectionLabel({ children }) {
+  return (
+    <div style={{ color: '#64748b', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>
+      {children}
+    </div>
+  )
+}
+
+function Divider() {
+  return <hr style={{ border: 'none', borderTop: '1px solid #334155', margin: '6px 0' }} />
+}
+
 function NodeButton({ label, onClick }) {
   const [hovered, setHovered] = useState(false)
   return (
@@ -57,9 +69,7 @@ export default function PipelineToolbar({ onAdd }) {
       borderRight: '1px solid #334155',
       background: 'rgba(15, 15, 35, 0.5)',
     }}>
-      <div style={{ color: '#64748b', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
-        Nodes
-      </div>
+      <SectionLabel>Model nodes</SectionLabel>
       <NodeButton label="Disk model" onClick={() => onAdd('disk')} />
       <NodeButton label="Envelope model" onClick={() => onAdd('envelope')} />
       <NodeButton label="Star model" onClick={() => onAdd('star')} />
@@ -67,7 +77,14 @@ export default function PipelineToolbar({ onAdd }) {
       <NodeButton label="Wavelength" onClick={() => onAdd('wavelength')} />
       <NodeButton label="Mcmono wavelength" onClick={() => onAdd('mcmono')} />
       <NodeButton label="Dust model" onClick={() => onAdd('dust')} />
+
+      <Divider />
+      <SectionLabel>Analysis nodes</SectionLabel>
       <NodeButton label="Plot" onClick={() => onAdd('plot')} />
+
+      <Divider />
+      <SectionLabel>Master nodes</SectionLabel>
+      <NodeButton label="Write continuum" onClick={() => onAdd('write-continuum')} />
     </div>
   )
 }

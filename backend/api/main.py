@@ -6,7 +6,7 @@ import traceback
 import base64
 import io
 
-from astromugs.modeling import Interface
+from astromugs.pipeline import Interface
 from astromugs.dust import CustomDistrib, MRNDistrib
 
 app = FastAPI(title="astroMUGS UI backend")

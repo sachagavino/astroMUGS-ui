@@ -187,8 +187,8 @@ export default function App() {
     const sourceNode = nodes.find((n) => n.id === incomingEdge.source)
     if (!sourceNode) return null
 
-    // If connected to the master "write-continuum" node, use its thermal path
-    if (sourceNode.id === 'write-continuum') {
+    // If connected to a master node, use its thermal path
+    if (sourceNode.type === 'master') {
       return thermalPath || null
     }
 
@@ -279,6 +279,23 @@ export default function App() {
     const baseX = kind === 'plot' ? 700 : 80
     const yOffset = 100 + Math.random() * 200
 
+    if (kind === 'write-continuum') {
+      setNodes((nds) => [
+        ...nds,
+        {
+          id: `write-continuum-${entryCounter.current}`,
+          type: 'master',
+          position: { x: 400, y: yOffset },
+          data: {
+            label: 'Write continuum',
+            flags: {},
+            onToggle: () => {},
+          },
+        },
+      ])
+      return
+    }
+
     if (kind === 'plot') {
       setNodes((nds) => [
         ...nds,
@@ -317,7 +334,7 @@ export default function App() {
 
   // Keep master node data in sync with state
   const nodesWithFlags = nodes.map((n) => {
-    if (n.id === 'write-continuum') {
+    if (n.type === 'master') {
       return {
         ...n,
         data: {
